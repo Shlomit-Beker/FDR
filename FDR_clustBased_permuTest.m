@@ -10,7 +10,7 @@
 %
 %  Shlomit Beker 2021 <shlomitbeker@gmail.com>
 
-function cluster_thresh = FDR_clustBased_permuTest(MAT1,MAT2,timeoi,freqoi)
+function cluster_thresh = FDR_clustBased_permuTest(MAT1,MAT2,timeoi,freqoi,z,Title)
 
 N = 10000; % number of permutation - defauls
 pval = 0.05; % p value - default
@@ -22,7 +22,7 @@ freqReduction = [1:length(freqoi)];
 
 numTime = length(timeReduction);
 numFreq = length(freqReduction);
-clim = [0 50];                                                        % color scale
+clim = [0 50];                                                           % color scale
 map1 = MAT1(:,freqReduction,timeReduction); 
 map2 = MAT2(:,freqReduction,timeReduction); 
 
@@ -114,7 +114,7 @@ end
 
 %% show histograph of maximum cluster sizes
 
-figure(3), clf
+figure(4), clf
 hist(max_cluster_sizes,20);
 xlabel('Maximum cluster sizes'), ylabel('Number of observations')
 title('Expected cluster sizes under the null hypothesis')
@@ -137,7 +137,7 @@ for i=1:islands.NumObjects
 end
 
 % plot tresholded results
-figure(4), clf
+figure(5), clf
 subplot(221)
 imagesc(timeoi(timeReduction),freqoi(freqReduction),realDiffItc)
 xlabel('Time (ms)'), ylabel('Frequency (Hz)')
@@ -147,7 +147,7 @@ set(gca,'clim',[-mean(clim) mean(clim)],'xlim',xlim,'ydir','norm')
 subplot(222)
 imagesc(timeoi(timeReduction),freqoi(freqReduction),realDiffItc)
 hold on
-contour(timeoi(timeReduction),freqoi(freqReduction),logical(zmap),1,'linecolor','k')
+contour(timeoi(timeReduction),freqoi(freqReduction),logical(zmap),1,'linewidth',2,'linecolor','w')
 xlabel('Time (ms)'), ylabel('Frequency (Hz)')
 title('TF power with contour')
 set(gca,'clim',[-mean(clim) mean(clim)],'xlim',xlim,'ydir','norm')
@@ -159,5 +159,49 @@ title('z-map, thresholded')
 set(gca,'clim',[-13 13],'xlim',xlim,'ydir','normal')
 
 
+%%
+
+zmapLocMat = zeros(size(realDiffItc));
+zmapLocMat(find(zmap)) = realDiffItc(find(zmap));
+figure;
+imagesc(timeoi(timeReduction),freqoi(freqReduction),zmapLocMat)
+colormap(bluewhitered(256)), colorbar
+hold on; 
+
+imagesc(timeoi(timeReduction),freqoi(freqReduction),realDiffItc,'AlphaData',0.3)
+xlabel('Time (ms)'), ylabel('Frequency (Hz)')
+set(gca,'xlim',xlim,'ydir','norm')
+colormap(bluewhitered(256)), colorbar
+
+
+%% plot interpolated image
+
+N=500;
+Timeoi = timeoi(round(timeReduction));
+
+
+[x,y] = meshgrid(Timeoi,freqoi); % low-res grid
+[x2,y2] = meshgrid(Timeoi(1):1/N/5:Timeoi(end),freqoi(1):.01:freqoi(end));  %high-res grid
+dataInterp2 = interp2(x,y,zmapLocMat, x2,y2, 'linear'); %interpolate up
+
+figure(111); hold on;
+
+subplot(2,3,z);
+imagesc(x2(1,:),y2(:,1),dataInterp2);
+set(gca,'xlim',xlim,'ydir','norm')
+caxis([-0.05 0.05])
+colormap(bluewhitered(256)), colorbar
+ 
+dataInterp3 = interp2(x,y,realDiffItc, x2,y2, 'linear'); %interpolate up
+hold on;
+imagesc(x2(1,:),y2(:,1),dataInterp3,'AlphaData',0.2)
+set(gca,'xlim',xlim,'ydir','norm')
+caxis([-0.05 0.05])
+
+colormap(bluewhitered(256)), colorbar
+%caxis([-0.0681    0.0860])
+ %c = [-0.05,0,0.05]; colorbar('YTick',c,'YTickLabel',c);
+xlabel('Time (Sec)'), ylabel('Frequency (Hz)')
+title(Title);
 
 
