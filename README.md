@@ -5,4 +5,3 @@ The codes under this folder correct for FDR (multiple comparisons) using two dif
 2. Cluster-based permutation test (as in Mike X. Cohen, 2014). 
 Of note, the last approach is more stringent than the first, and more recent.  
 Shlomit Beker 2021. <shlomitbeker@gmail.com>.
-
